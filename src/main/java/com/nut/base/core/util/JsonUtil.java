@@ -13,4 +13,9 @@ public class JsonUtil {
     public static String toString(Object object) {
         return JSON.toJSONString(object);
     }
+
+    public static <T> T toBean(String str, Class<T> clz) {
+        return JSONObject.parseObject(str, clz);
+    }
+
 }

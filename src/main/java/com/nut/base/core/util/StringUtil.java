@@ -19,9 +19,4 @@ public class StringUtil {
         return isNotEmpty(source) ? source : defaultStr;
     }
 
-
-    public static void main(String[] args) {
-        String str = "";
-        System.out.println(isEmpty(str));
-    }
 }

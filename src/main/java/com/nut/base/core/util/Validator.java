@@ -1,6 +1,7 @@
 package com.nut.base.core.util;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Auther: han jianguo
@@ -23,5 +24,13 @@ public class Validator {
 
     public static <T> boolean isNotNull(T... array) {
         return !isNull(array);
+    }
+
+    public static boolean isNull(Map map) {
+        return map == null || map.isEmpty();
+    }
+
+    public static boolean isNotNull(Map map) {
+        return !isNull(map);
     }
 }

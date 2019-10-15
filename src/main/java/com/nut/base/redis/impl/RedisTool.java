@@ -4,16 +4,14 @@ import com.nut.base.core.common.Constants;
 import com.nut.base.core.util.JsonUtil;
 import com.nut.base.core.util.StringUtil;
 import com.nut.base.core.util.Validator;
+import com.nut.base.redis.RedisExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -424,19 +422,488 @@ public class RedisTool {
         }
     }
 
-
-    public int test() {
-
-        try (Jedis jedis = jedisPool.getResource()) {
-            //jedis.hexists()
-
-
-            return Constants.SUCCESS;
-        } catch (Exception e) {
-            log.error("redis添加hash错误：" + e);
-            return Constants.EXCEPTION;
+    public int sadd(String key, String... members) {
+        if (StringUtil.isNotEmpty(key) && Validator.isNotNull(members)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.sadd(key, members);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis添加set错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
         }
+    }
 
+    public String spop(String key, String defaultStr) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return StringUtil.getNotEmptyStr(jedis.spop(key), defaultStr);
+            } catch (Exception e) {
+                log.error("redis获取set错误：" + e);
+                return defaultStr;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return defaultStr;
+        }
+    }
+
+    public Set<String> smembers(String key) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.smembers(key);
+            } catch (Exception e) {
+                log.error("redis批量获取set错误：" + e);
+                return new HashSet<>(0);
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return new HashSet<>(0);
+        }
+    }
+
+    public int srem(String key, String... members) {
+        if (StringUtil.isNotEmpty(key) && Validator.isNotNull(members)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.srem(key, members);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis删除set错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int scard(String key) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return Math.toIntExact(jedis.scard(key));
+            } catch (Exception e) {
+                log.error("redis获取set长度错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+
+    public boolean sismember(String key, String member) {
+        if (StringUtil.isNotEmpty(key) && StringUtil.isNotEmpty(member)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.sismember(key, member);
+            } catch (Exception e) {
+                log.error("redis判断set数据是否存在错误：" + e);
+                return false;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return false;
+        }
+    }
+
+    public int smove(String source, String destination, String member) {
+        if (StringUtil.isNotEmpty(source) && StringUtil.isNotEmpty(destination) && StringUtil.isNotEmpty(member)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.smove(source, destination, member);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis判断set数据是否存在错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public Set<String> sdiff(String... keys) {
+        if (Validator.isNotNull(keys)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.sdiff(keys);
+            } catch (Exception e) {
+                log.error("redis获取set差集错误：" + e);
+                return new HashSet<>(0);
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return new HashSet<>(0);
+        }
+    }
+
+    public int sdiffstore(String destination, String... keys) {
+        if (StringUtil.isNotEmpty(destination) && Validator.isNotNull(keys)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.sdiffstore(destination, keys);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis获取set差集错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public Set<String> sinter(String... keys) {
+        if (Validator.isNotNull(keys)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.sinter(keys);
+            } catch (Exception e) {
+                log.error("redis获取set交集错误：" + e);
+                return new HashSet<>(0);
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return new HashSet<>(0);
+        }
+    }
+
+    public int sinterstore(String destination, String... keys) {
+        if (StringUtil.isNotEmpty(destination) && Validator.isNotNull(keys)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.sinterstore(destination, keys);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis获取set交集错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public Set<String> sunion(String... keys) {
+        if (Validator.isNotNull(keys)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.sunion(keys);
+            } catch (Exception e) {
+                log.error("redis获取set并集错误：" + e);
+                return new HashSet<>(0);
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return new HashSet<>(0);
+        }
+    }
+
+    public int sunionstore(String destination, String... keys) {
+        if (StringUtil.isNotEmpty(destination) && Validator.isNotNull(keys)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.sunionstore(destination, keys);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis获取set并集错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int zadd(String key, Map<String, Double> memberScoreMap) {
+        if (StringUtil.isNotEmpty(key) && Validator.isNotNull(memberScoreMap)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.zadd(key, memberScoreMap);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis添加zset错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int zcard(String key) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return Math.toIntExact(jedis.zcard(key));
+            } catch (Exception e) {
+                log.error("redis获取zset长度错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int zcount(String key, double min, double max) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return Math.toIntExact(jedis.zcount(key, min, max));
+            } catch (Exception e) {
+                log.error("redis获取zset指定分数区间元素个数错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int zincrby(String key, String member, double increment) {
+        if (StringUtil.isNotEmpty(key) && StringUtil.isNotEmpty(member)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.zincrby(key, increment, member);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis获取zset指定分数区间元素个数错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int zinterstore(String destination, String... keys) {
+        if (StringUtil.isNotEmpty(destination) && Validator.isNotNull(keys)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.zinterstore(destination, keys);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis获取zset交集错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int zunionstore(String destination, String... keys) {
+        if (StringUtil.isNotEmpty(destination) && Validator.isNotNull(keys)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.zunionstore(destination, keys);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis获取zset并集错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public Set<String> zrangebyscore(String key, double min, double max) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.zrangeByScore(key, min, max);
+            } catch (Exception e) {
+                log.error("redis按分数获取zset信息错误：" + e);
+                return new HashSet<>(0);
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return new HashSet<>(0);
+        }
+    }
+
+    public int zrem(String key, String... members) {
+        if (StringUtil.isNotEmpty(key) && Validator.isNotNull(members)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.zrem(key, members);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis删除zset错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int zremrangebyscore(String key, double min, double max) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.zremrangeByScore(key, min, max);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis删除zset错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public Set<String> zrevrangebyscore(String key, double min, double max) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.zrevrangeByScore(key, max, min);
+            } catch (Exception e) {
+                log.error("redis按分数获取zset错误：" + e);
+                return new HashSet<>(0);
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return new HashSet<>(0);
+        }
+    }
+
+    public long zrevrank(String key, String member) {
+        if (StringUtil.isNotEmpty(key) && StringUtil.isNotEmpty(member)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.zrevrank(key, member);
+            } catch (Exception e) {
+                log.error("redis获取zset指定成员排名错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public double zscore(String key, String member) {
+        if (StringUtil.isNotEmpty(key) && StringUtil.isNotEmpty(member)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.zscore(key, member);
+            } catch (Exception e) {
+                log.error("redis获取zset指定成员分数错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int del(String... keys) {
+        if (Validator.isNotNull(keys)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.del(keys);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis删除错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public boolean exists(String key) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.exists(key);
+            } catch (Exception e) {
+                log.error("redis判断某键是否存在错误：" + e);
+                return false;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return false;
+        }
+    }
+
+    public int expire(String key, int seconds) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.expire(key, seconds);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis设置有效期错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int expire(String key, long unixTime) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.expireAt(key, unixTime);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis设置有效期错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int persist(String key) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.persist(key);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis去除有效期错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public long ttl(String key) {
+        if (StringUtil.isNotEmpty(key)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                return jedis.ttl(key);
+            } catch (Exception e) {
+                log.error("redis获取有效期错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public int rename(String key, String newKey) {
+        if (StringUtil.isNotEmpty(key) && StringUtil.isNotEmpty(newKey)) {
+            try (Jedis jedis = jedisPool.getResource()) {
+                jedis.rename(key, newKey);
+                return Constants.SUCCESS;
+            } catch (Exception e) {
+                log.error("redis获取有效期错误：" + e);
+                return Constants.EXCEPTION;
+            }
+        } else {
+            log.error("调用redis缓存方法的参数不能为空");
+            return Constants.DATA_EMPTY;
+        }
+    }
+
+    public boolean isConnection() {
+        try (Jedis jedis = jedisPool.getResource()) {
+            return jedis.isConnected() && "PONG".equals(jedis.ping());
+        } catch (Exception e) {
+            log.error("redis验证是否连接错误：" + e);
+            return false;
+        }
+    }
+
+    public <T> T executor(RedisExecutor<T> executor) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            return executor.run(jedis);
+        } catch (Exception e) {
+            log.error("redis执行自定义执行器错误：" + e);
+        }
+        return null;
     }
 
 

@@ -201,6 +201,10 @@ public class RedisTool {
         }
     }
 
+    public <T> int hsetBean(String key, String field, T value) {
+        return hset(key, field, JsonUtil.toString(value));
+    }
+
     public int hset(String key, String field, String value) {
         if (StringUtil.isNotEmpty(key) && StringUtil.isNotEmpty(field) && StringUtil.isNotEmpty(value)) {
             try (Jedis jedis = jedisPool.getResource()) {
@@ -216,6 +220,10 @@ public class RedisTool {
         }
     }
 
+    public <T> T hgetBean(String key, String field, Class<T> clz) {
+        return JsonUtil.toBean(hget(key, field, ""), clz);
+    }
+
     public String hget(String key, String field, String defaultStr) {
         if (StringUtil.isNotEmpty(key) && StringUtil.isNotEmpty(field)) {
             try (Jedis jedis = jedisPool.getResource()) {
@@ -229,7 +237,6 @@ public class RedisTool {
             return defaultStr;
         }
     }
-
 
     public int hmset(String key, Map<String, String> fieldValueMap) {
         if (StringUtil.isNotEmpty(key) && Validator.isNotNull(fieldValueMap)) {
@@ -306,7 +313,7 @@ public class RedisTool {
         }
     }
 
-    public int hincrby(String key, String field, int increment) {
+    public int hincrBy(String key, String field, int increment) {
         if (StringUtil.isNotEmpty(key) && Validator.isNotNull(field)) {
             try (Jedis jedis = jedisPool.getResource()) {
                 jedis.hincrBy(key, field, increment);
@@ -335,6 +342,30 @@ public class RedisTool {
         }
     }
 
+    public <T> int lpushBean(String key, List<T> values) {
+        return lpush(key, toStringArray(values));
+    }
+
+    private <T> String[] toStringArray(List<T> values) {
+        String[] strings = new String[values.size()];
+        for (int i = 0; i < values.size(); i++) {
+            strings[i] = JsonUtil.toString(values.get(i));
+        }
+        return strings;
+    }
+
+    public <T> int lpushBean(String key, T... values) {
+        return lpush(key, toStringArray(values));
+    }
+
+    private <T> String[] toStringArray(T... values) {
+        String[] strings = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            strings[i] = JsonUtil.toString(values[i]);
+        }
+        return strings;
+    }
+
     public int lpush(String key, String... values) {
         if (StringUtil.isNotEmpty(key) && Validator.isNotNull(values)) {
             try (Jedis jedis = jedisPool.getResource()) {
@@ -350,6 +381,10 @@ public class RedisTool {
         }
     }
 
+    public <T> T lpopBean(String key, Class<T> clz) {
+        return JsonUtil.toBean(lpop(key, ""), clz);
+    }
+
     public String lpop(String key, String defaultStr) {
         if (StringUtil.isNotEmpty(key)) {
             try (Jedis jedis = jedisPool.getResource()) {
@@ -362,6 +397,14 @@ public class RedisTool {
             log.error("调用redis缓存方法的参数不能为空");
             return defaultStr;
         }
+    }
+
+    public <T> int rpushBean(String key, List<T> values) {
+        return rpush(key, toStringArray(values));
+    }
+
+    public <T> int rpushBean(String key, T... values) {
+        return rpush(key, toStringArray(values));
     }
 
     public int rpush(String key, String... values) {
@@ -379,6 +422,10 @@ public class RedisTool {
         }
     }
 
+    public <T> T rpopBean(String key, Class<T> clz) {
+        return JsonUtil.toBean(rpop(key, ""), clz);
+    }
+
     public String rpop(String key, String defaultStr) {
         if (StringUtil.isNotEmpty(key)) {
             try (Jedis jedis = jedisPool.getResource()) {
@@ -391,6 +438,10 @@ public class RedisTool {
             log.error("调用redis缓存方法的参数不能为空");
             return defaultStr;
         }
+    }
+
+    public <T> List<T> lrangeBean(String key, int start, int stop, Class<T> clz) {
+        return lrange(key, start, stop).stream().map(s -> JsonUtil.toBean(s, clz)).collect(Collectors.toList());
     }
 
     public List<String> lrange(String key, int start, int stop) {
@@ -422,6 +473,14 @@ public class RedisTool {
         }
     }
 
+    public <T> int saddBean(String key, List<T> members) {
+        return sadd(key, toStringArray(members));
+    }
+
+    public <T> int saddBean(String key, T... members) {
+        return sadd(key, toStringArray(members));
+    }
+
     public int sadd(String key, String... members) {
         if (StringUtil.isNotEmpty(key) && Validator.isNotNull(members)) {
             try (Jedis jedis = jedisPool.getResource()) {
@@ -437,6 +496,10 @@ public class RedisTool {
         }
     }
 
+    public <T> T spopBean(String key, Class<T> clz) {
+        return JsonUtil.toBean(spop(key, ""), clz);
+    }
+
     public String spop(String key, String defaultStr) {
         if (StringUtil.isNotEmpty(key)) {
             try (Jedis jedis = jedisPool.getResource()) {
@@ -449,6 +512,10 @@ public class RedisTool {
             log.error("调用redis缓存方法的参数不能为空");
             return defaultStr;
         }
+    }
+
+    public <T> Set<T> smembersBean(String key, Class<T> clz) {
+        return smembers(key).stream().map(s -> JsonUtil.toBean(s, clz)).collect(Collectors.toSet());
     }
 
     public Set<String> smembers(String key) {
@@ -609,6 +676,12 @@ public class RedisTool {
             log.error("调用redis缓存方法的参数不能为空");
             return Constants.DATA_EMPTY;
         }
+    }
+
+    public int zadd(String key, String member, double score) {
+        Map<String, Double> map = new HashMap<>();
+        map.put(member, score);
+        return zadd(key, map);
     }
 
     public int zadd(String key, Map<String, Double> memberScoreMap) {
@@ -905,6 +978,5 @@ public class RedisTool {
         }
         return null;
     }
-
 
 }

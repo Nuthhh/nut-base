@@ -1,3 +1,5 @@
+package com.nut.base.vo;
+
 /**
  * @Auther: han jianguo
  * @Date: 2019/10/14 17:57
@@ -10,7 +12,7 @@ public class Student {
 
     @Override
     public String toString() {
-        return "Student{" +
+        return "com.nut.base.vo.Student{" +
                 "name='" + name + '\'' +
                 ", age=" + age +
                 '}';

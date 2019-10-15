@@ -1,17 +1,18 @@
+package com.nut.base.redis;
+
 import com.nut.base.redis.impl.RedisTool;
+import com.nut.base.vo.Student;
 
 import java.util.List;
 
 /**
  * @Auther: han jianguo
- * @Date: 2019/10/12 15:50
+ * @Date: 2019/10/15 15:42
  * @Description:
  **/
-public class Main {
-
+public class RedisDemo {
 
     public static void main(String[] args) {
-
         RedisTool redisTool = new RedisTool("localhost", 6379);
         // redisTool.set("test","ok");
         Student a = new Student();

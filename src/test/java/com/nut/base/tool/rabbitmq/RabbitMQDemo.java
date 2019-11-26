@@ -1,4 +1,4 @@
-package com.nut.base.rabbitmq;
+package com.nut.base.tool.rabbitmq;
 
 /**
  * @Auther: han jianguo

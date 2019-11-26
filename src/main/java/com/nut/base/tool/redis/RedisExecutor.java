@@ -1,4 +1,4 @@
-package com.nut.base.redis;
+package com.nut.base.tool.redis;
 
 import redis.clients.jedis.Jedis;
 

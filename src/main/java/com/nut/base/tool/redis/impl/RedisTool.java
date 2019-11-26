@@ -1,10 +1,11 @@
-package com.nut.base.redis.impl;
+package com.nut.base.tool.redis.impl;
 
 import com.nut.base.core.common.Constants;
 import com.nut.base.core.util.JsonUtil;
 import com.nut.base.core.util.StringUtil;
 import com.nut.base.core.util.Validator;
-import com.nut.base.redis.RedisExecutor;
+import com.nut.base.tool.redis.IRedisTool;
+import com.nut.base.tool.redis.RedisExecutor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import redis.clients.jedis.Jedis;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
  * @Date: 2019/10/12 11:47
  * @Description:
  **/
-public class RedisTool {
+public class RedisTool implements IRedisTool {
 
     private static Log log = LogFactory.getLog(RedisTool.class);
     private JedisPool jedisPool;

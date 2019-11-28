@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
@@ -36,9 +37,10 @@ public class DownloadUtil {
 
 
     public static void main(String[] args) {
-        String url = "http://fs.up366.com/download/50084372999307264";
+        String url = "https://dldir1.qq.com/qqfile/qq/TIM2.3.2/21173/TIM2.3.2.21173.exe";
         String location = "D:\\";
-        downloadByUrl(url, location);
+       // downloadByUrl(url, location);
+        getDownloadData(url);
     }
 
 
@@ -91,11 +93,12 @@ public class DownloadUtil {
                 fileName = newUrl.substring(pos + 1);
             }
 
-            if (StringUtil.isEmpty(fileName)) {
+            if (StringUtil.isEmpty(fileName) || !fileName.contains(".")) {
                 String raw = conn.getHeaderField("Content-Disposition"); // raw = "attachment; filename=abc.jpg"
                 if (raw != null && raw.indexOf("=") > 0) {
                     fileName = raw.split("=")[1]; // getting value after '='
                     fileName = fileName.replaceAll("\"", "");
+                    fileName = new String(fileName.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
                 }
             }
 

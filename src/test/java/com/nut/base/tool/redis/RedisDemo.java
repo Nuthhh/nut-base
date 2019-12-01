@@ -1,6 +1,6 @@
-package com.nut.base.redis;
+package com.nut.base.tool.redis;
 
-import com.nut.base.redis.impl.RedisTool;
+import com.nut.base.tool.redis.impl.RedisTool;
 import com.nut.base.vo.Student;
 
 import java.util.List;

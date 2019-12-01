@@ -150,8 +150,9 @@ public class DownloadUtil {
             in = new BufferedInputStream(conn.getInputStream());
 
             realFile = new RandomAccessFile(fileLocal, "rwd");
-            if (startPos > 0)
+            if (startPos > 0){
                 realFile.seek(startPos);
+            }
 
             byte[] temp = new byte[1024];
             int size = 0;
@@ -169,15 +170,17 @@ public class DownloadUtil {
         }
 
         try {
-            if (in != null)
+            if (in != null) {
                 in.close();
+            }
         } catch (IOException e2) {
             log.error("文件下载异常：" + e2.toString());
         }
 
         try {
-            if (realFile != null)
+            if (realFile != null){
                 realFile.close();
+            }
         } catch (IOException e3) {
             log.error("文件下载异常：" + e3.toString());
         }
@@ -231,12 +234,15 @@ public class DownloadUtil {
      * 下面的实现意味着信任所有证书，不管是否权威
      */
     private static class TrustAnyTrustManager implements X509TrustManager {
+        @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         }
 
+        @Override
         public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
         }
 
+        @Override
         public X509Certificate[] getAcceptedIssuers() {
             return new X509Certificate[]{};
         }
@@ -247,6 +253,7 @@ public class DownloadUtil {
      * 下面的实现意味着默认接受所有域名，存在安全风险
      */
     private static class TrustAnyHostnameVerifier implements HostnameVerifier {
+        @Override
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }
